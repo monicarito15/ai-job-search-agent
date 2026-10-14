@@ -20,6 +20,10 @@ export async function scrapeJob(url: string): Promise<string> {
         .trim()
         .slice(0, 3000);
 
+    if (text.includes("Fristen er utløpt") || text.includes("fristen er utløpt")) {
+        return "EXPIRED: This job posting is no longer active. Skip it.";
+    }
+
     return text || "Could not read job posting.";
 }
 
