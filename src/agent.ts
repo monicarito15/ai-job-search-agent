@@ -93,9 +93,9 @@ export async function runAgent(userQuery: string): Promise<void> {
 Your process:
 1. Always start by reading the CV to understand the candidate's skills
 2. Search for jobs based on the query
-3. For each search result that looks relevant: scrape the full job posting
-4. Research the company behind each interesting posting
-5. For each job that is a good match with the CV: generate a personalized søknad
+3. For each search result that looks relevant: scrape the full job posting — skip it if: the deadline has passed ("Fristen er utløpt"), it requires more than 3 years of experience (senior roles), or the location is not Trondheim (unless remote/hybrid is explicitly offered)
+4. Research the company behind each active and interesting posting
+5. For each active job that is a good match with the CV: generate a personalized søknad
 
 Rules for writing søknader:
 - Write in Norwegian
