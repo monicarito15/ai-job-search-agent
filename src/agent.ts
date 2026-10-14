@@ -5,8 +5,6 @@ import { scrapeJob } from "./tools/scraper.js";
 import { researchCompany } from "./tools/company.js";
 import { generateSoknad } from "./tools/documents.js";
 
-const client = new Anthropic();
-
 const tools: Anthropic.Tool[] = [
   {
     name: "read_cv",
@@ -83,6 +81,7 @@ async function processToolCall(toolName: string, toolInput: Record<string, strin
 }
 
 export async function runAgent(userQuery: string): Promise<void> {
+  const client = new Anthropic();
   console.log(`\n🚀 Starting job search: "${userQuery}"\n`);
 
   const messages: Anthropic.MessageParam[] = [
@@ -107,11 +106,11 @@ Rules for writing søknader:
 - Structure: hook intro → technical skills with concrete examples → unique background → closing focused on company value
 - Max 1 page
 
-After finishing, print a summary of all jobs found and which ones got a søknad.`;
+After finishing, print a summary with: job title, company, URL, match assessment, and whether a søknad was generated.`;
 
   while (true) {
     const response = await client.messages.create({
-      model: "claude-opus-4-6",
+      model: "claude-haiku-4-5-20251001",
       max_tokens: 8096,
       system,
       tools,
