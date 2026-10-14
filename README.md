@@ -1,4 +1,4 @@
-# Looking for Work
+# AI Job Search Agent
 
 AI agent that searches for jobs in Norway, researches companies, and generates personalized søknader automatically.
 
