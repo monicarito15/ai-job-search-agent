@@ -2,14 +2,17 @@ import fetch from "node-fetch";
 import * as cheerio from "cheerio";
 
 export async function scrapeJob(url: string): Promise<string> {
-    const response = await fetch(url, {
-        headers: {
-            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
-        },
-
-    });
-
-    const html = await response.text();
+    let html: string;
+    try {
+        const response = await fetch(url, {
+            headers: {
+                "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
+            },
+        });
+        html = await response.text();
+    } catch {
+        return "Could not read job posting: URL unreachable. Skip this job.";
+    }
     const $ = cheerio.load(html);
 
      // Remove scripts and styles
