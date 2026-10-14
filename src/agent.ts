@@ -93,7 +93,7 @@ export async function runAgent(userQuery: string): Promise<void> {
 Your process:
 1. Always start by reading the CV to understand the candidate's skills
 2. Search for jobs based on the query
-3. For each search result that looks relevant: scrape the full job posting — skip it if: the deadline has passed ("Fristen er utløpt"), it requires more than 3 years of experience (senior roles), or the location is not Trondheim (unless remote/hybrid is explicitly offered)
+3. For each search result that looks relevant: scrape the full job posting — skip it immediately (do NOT generate søknad) if ANY of these are true: deadline has passed ("Fristen er utløpt"), the posting explicitly says "minst X års erfaring" where X is 4 or more (this is a hard rule — tech stack match does NOT override it), or the location is not Trondheim (unless remote/hybrid is explicitly stated)
 4. Research the company behind each active and interesting posting
 5. For each active job that is a good match with the CV: generate a personalized søknad
 
