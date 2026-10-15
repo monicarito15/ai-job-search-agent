@@ -11,17 +11,22 @@ export async function generateSoknad(
   const month = today.toLocaleString("nb-NO", { month: "long" });
   const year = today.getFullYear();
 
+  const userName = process.env.USER_NAME ?? "Your Name";
+  const userContact = process.env.USER_CONTACT ?? "email · phone · city · website";
+  const userCity = process.env.USER_CITY ?? "Trondheim";
+  const outputDir = process.env.USER_OUTPUT_DIR ?? "Documents/Søknader";
+
   const doc = new Document({
     sections: [{
       children: [
         // Header - name
         new Paragraph({
-          children: [new TextRun({ text: "Carolina Cabrera Mera", bold: true, size: 24 })],
+          children: [new TextRun({ text: userName, bold: true, size: 24 })],
         }),
         // Contact info in dark gray
         new Paragraph({
           children: [new TextRun({
-            text: "carolinamera1985@gmail.com  ·  90272813  ·  Trondheim  ·  carolinamera.com",
+            text: userContact,
             color: "595959",
             size: 20,
           })],
@@ -29,7 +34,7 @@ export async function generateSoknad(
         new Paragraph({ text: "" }),
         // Date
         new Paragraph({
-          children: [new TextRun({ text: `Trondheim, ${day}. ${month} ${year}` })],
+          children: [new TextRun({ text: `${userCity}, ${day}. ${month} ${year}` })],
         }),
         new Paragraph({ text: "" }),
         // Recipient
@@ -47,7 +52,7 @@ export async function generateSoknad(
         new Paragraph({ text: "" }),
         // Closing
         new Paragraph({ children: [new TextRun({ text: "Med vennlig hilsen" })] }),
-        new Paragraph({ children: [new TextRun({ text: "Carolina Cabrera Mera", bold: true })] }),
+        new Paragraph({ children: [new TextRun({ text: userName, bold: true })] }),
       ],
     }],
   });
@@ -55,8 +60,8 @@ export async function generateSoknad(
   const buffer = await Packer.toBuffer(doc);
   const outputPath = path.join(
     process.env.HOME!,
-    "Documents/Cv og søknad/Trabajos søknad 2026/Agent-Søknads",
-    `Soknad_${companyName.replace(/\s+/g, "_")}_Carolina.docx`
+    outputDir,
+    `Soknad_${companyName.replace(/\s+/g, "_")}.docx`
   );
 
   if (!fs.existsSync(path.dirname(outputPath))) {
