@@ -4,6 +4,7 @@ import { searchJobs } from "./tools/search.js";
 import { scrapeJob } from "./tools/scraper.js";
 import { researchCompany } from "./tools/company.js";
 import { generateSoknad } from "./tools/documents.js";
+import { loadHistory, saveSession, formatHistoryForContext } from "./tools/history.js";
 
 const tools: Anthropic.Tool[] = [
   {
@@ -84,6 +85,9 @@ export async function runAgent(userQuery: string): Promise<void> {
   const client = new Anthropic();
   console.log(`\n🚀 Starting job search: "${userQuery}"\n`);
 
+  const history = loadHistory();
+  const historyContext = formatHistoryForContext(history);
+
   const messages: Anthropic.MessageParam[] = [
     { role: "user", content: userQuery },
   ];
@@ -106,7 +110,7 @@ Rules for writing søknader:
 - Structure: hook intro → technical skills with concrete examples → unique background → closing focused on company value
 - Max 1 page
 
-After finishing, print a summary with: job title, company, URL, match assessment, and whether a søknad was generated.`;
+After finishing, print a summary with: job title, company, URL, match assessment, and whether a søknad was generated.${historyContext ? `\n\n## Historial de sesiones anteriores:\n${historyContext}` : ""}`;
 
   while (true) {
     const response = await client.messages.create({
@@ -125,6 +129,7 @@ After finishing, print a summary with: job title, company, URL, match assessment
         .map((b) => (b as Anthropic.TextBlock).text)
         .join("\n");
       console.log("\n" + finalText);
+      saveSession(userQuery, finalText);
       break;
     }
 
