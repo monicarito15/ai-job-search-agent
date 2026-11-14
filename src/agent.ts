@@ -3,7 +3,7 @@ import { readCV } from "./tools/cv.js";
 import { searchJobs } from "./tools/search.js";
 import { scrapeJob } from "./tools/scraper.js";
 import { researchCompany } from "./tools/company.js";
-import { generateSoknad } from "./tools/documents.js";
+import { generateSoknad, generateAnalysis } from "./tools/documents.js";
 import { loadHistory, saveSession, formatHistoryForContext } from "./tools/history.js";
 
 const tools: Anthropic.Tool[] = [
@@ -57,6 +57,32 @@ const tools: Anthropic.Tool[] = [
       required: ["company_name", "content"],
     },
   },
+  {
+    name: "generate_analysis",
+    description: "Generate and save a company analysis .docx with pros, cons and why the candidate should apply. Call this for every job that is actively considered, before or after generating the søknad.",
+    input_schema: {
+      type: "object",
+      properties: {
+        company_name: { type: "string", description: "Name of the company" },
+        job_title: { type: "string", description: "Title of the job position" },
+        pros: {
+          type: "array",
+          items: { type: "string" },
+          description: "List of pros: skills that match, technologies the candidate knows, culture fit, growth opportunities, etc.",
+        },
+        cons: {
+          type: "array",
+          items: { type: "string" },
+          description: "List of cons: skill gaps, requirements the candidate doesn't fully meet, potential red flags, etc.",
+        },
+        why_apply: {
+          type: "string",
+          description: "A short paragraph explaining why this job is worth applying to despite any cons.",
+        },
+      },
+      required: ["company_name", "job_title", "pros", "cons", "why_apply"],
+    },
+  },
 ];
 
 async function processToolCall(toolName: string, toolInput: Record<string, string>): Promise<string> {
@@ -76,6 +102,23 @@ async function processToolCall(toolName: string, toolInput: Record<string, strin
     case "generate_soknad":
       console.log(`✍️  Generating søknad for ${toolInput.company_name}...`);
       return await generateSoknad(toolInput.company_name, toolInput.content);
+    case "generate_analysis": {
+      console.log(`📊 Generating analysis for ${toolInput.company_name}...`);
+      const input = toolInput as unknown as {
+        company_name: string;
+        job_title: string;
+        pros: string[];
+        cons: string[];
+        why_apply: string;
+      };
+      return await generateAnalysis(
+        input.company_name,
+        input.job_title,
+        input.pros,
+        input.cons,
+        input.why_apply
+      );
+    }
     default:
       return `Unknown tool: ${toolName}`;
   }
@@ -99,7 +142,7 @@ Your process:
 2. Search for jobs based on the query
 3. For each search result that looks relevant: scrape the full job posting — skip it immediately (do NOT generate søknad) if ANY of these are true: deadline has passed ("Fristen er utløpt"), the posting explicitly says "minst X års erfaring" where X is 4 or more (this is a hard rule — tech stack match does NOT override it), or the location is not Trondheim (unless remote/hybrid is explicitly stated)
 4. Research the company behind each active and interesting posting
-5. For each active job that is a good match with the CV: generate a personalized søknad
+5. For each active job that is a good match with the CV: generate a company analysis (.docx) with pros, cons and why to apply — then generate a personalized søknad
 
 Rules for writing søknader:
 - Write in Norwegian

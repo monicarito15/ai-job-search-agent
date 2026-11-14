@@ -1,4 +1,4 @@
-import { Document, Packer, Paragraph, TextRun, AlignmentType } from "docx";
+import { Document, Packer, Paragraph, TextRun, AlignmentType, HeadingLevel } from "docx";
 import fs from "fs";
 import path from "path";
 
@@ -70,4 +70,73 @@ export async function generateSoknad(
 
   fs.writeFileSync(outputPath, buffer);
   return `Application letter saved to: ${outputPath}`;
+}
+
+export async function generateAnalysis(
+  companyName: string,
+  jobTitle: string,
+  pros: string[],
+  cons: string[],
+  whyApply: string
+): Promise<string> {
+  const outputDir = process.env.USER_OUTPUT_DIR ?? "Documents/Søknader";
+
+  const bulletItems = (items: string[]) =>
+    items.map(
+      (item) =>
+        new Paragraph({
+          children: [new TextRun({ text: `• ${item}` })],
+          spacing: { after: 80 },
+        })
+    );
+
+  const doc = new Document({
+    sections: [
+      {
+        children: [
+          new Paragraph({
+            children: [new TextRun({ text: `${companyName} — ${jobTitle}`, bold: true, size: 28 })],
+            spacing: { after: 400 },
+          }),
+
+          new Paragraph({
+            children: [new TextRun({ text: "Pros", bold: true, size: 24, color: "2E7D32" })],
+            spacing: { after: 120 },
+          }),
+          ...bulletItems(pros),
+          new Paragraph({ text: "" }),
+
+          new Paragraph({
+            children: [new TextRun({ text: "Cons", bold: true, size: 24, color: "C62828" })],
+            spacing: { after: 120 },
+          }),
+          ...bulletItems(cons),
+          new Paragraph({ text: "" }),
+
+          new Paragraph({
+            children: [new TextRun({ text: "Por qué aplicar", bold: true, size: 24, color: "1565C0" })],
+            spacing: { after: 120 },
+          }),
+          new Paragraph({
+            children: [new TextRun({ text: whyApply })],
+            alignment: AlignmentType.JUSTIFIED,
+          }),
+        ],
+      },
+    ],
+  });
+
+  const buffer = await Packer.toBuffer(doc);
+  const outputPath = path.join(
+    process.env.HOME!,
+    outputDir,
+    `Analyse_${companyName.replace(/\s+/g, "_")}.docx`
+  );
+
+  if (!fs.existsSync(path.dirname(outputPath))) {
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+  }
+
+  fs.writeFileSync(outputPath, buffer);
+  return `Analysis saved to: ${outputPath}`;
 }
